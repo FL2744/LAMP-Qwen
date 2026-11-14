@@ -1,0 +1,37 @@
+[
+  {
+    "number": 1,
+    "title": "Intervention at the final feed-forward stage",
+    "caption": "Two-branch intervention schematic. The same displacement enters the normalization input and the residual path; no later attention layer follows this insertion point.",
+    "section_preceded": "Model and intervention point",
+    "provenance": "Explanatory schematic derived from the report; not a screenshot or new experiment."
+  },
+  {
+    "number": 2,
+    "title": "Authoring and validating an answer trajectory",
+    "caption": "Sequence writer. Source and donor traces are teacher-forced with matching prefixes; a failed free-generation validation restores the prior memory.",
+    "section_preceded": "The forward-only writer",
+    "provenance": "Explanatory schematic derived from the report; not a screenshot or new experiment."
+  },
+  {
+    "number": 3,
+    "title": "Position-indexed numerical replay",
+    "caption": "Inference schematic. Routing occurs once per answer, while the selected adjustment varies with decoding position. This is restricted activation replay, not a stored answer-string lookup.",
+    "section_preceded": "Development evaluation",
+    "provenance": "Explanatory schematic derived from the report; not a screenshot or new experiment."
+  },
+  {
+    "number": 4,
+    "title": "Recognition and reproduction are different tests",
+    "caption": "Reported recognition example. The strict default threshold rejects one tested paraphrase despite successful exact-source sequence writes; these are development observations.",
+    "section_preceded": "Costs and limitations",
+    "provenance": "Explanatory schematic derived from the report; not a screenshot or new experiment."
+  },
+  {
+    "number": 5,
+    "title": "Separate storage enables reversible edits",
+    "caption": "Storage and reversibility schematic. Numerical memory is persisted separately from the frozen model. Its reversibility does not make encoded associations confidential.",
+    "section_preceded": "Practical utility, reversibility, and recoverability",
+    "provenance": "Explanatory schematic derived from the report; not a screenshot or new experiment."
+  }
+]
