@@ -4,7 +4,7 @@ William Taggart
 Modern and Classical Languages and Literatures, Virginia Tech  
 wtaggart@vt.edu
 
-ACM manuscript edition: November 13, 2026
+Report date: November 13, 2026
 
 ## Abstract
 
@@ -19,7 +19,6 @@ LAMP-Qwen preserves the central design—a frozen base, an initially inactive me
 The distinction between *training* and *writing* is essential. Qwen has already undergone substantial training. The present writer uses model inference, tensor subtraction, normalization, and validation; it does not perform backpropagation or optimizer steps. The resulting memory supplements the base model rather than replacing its pretrained parameters.
 
 This prototype also distinguishes numerical storage from a conventional response lookup. During ordinary inference, the runtime does not retrieve a stored answer string and print it. It selects numerical adjustments and continues the model’s forward computation. Nevertheless, the sequence extension explicitly depends on decoding position and stores a trajectory for a particular answer. Its behavior should therefore be understood as restricted activation replay, not as proof that a compact, general-purpose semantic memory has been learned.
-
 
 ![Intervention at the final feed-forward stage](figures/illustration-01.png)
 
@@ -67,7 +66,6 @@ s_i=\left\langle\frac{\widetilde h_0}{\lVert\widetilde h_0\rVert_2},K_i\right\ra
 $$
 At inference, $\widetilde h_0$ is the current question state. The highest-scoring enabled slot at or above its threshold is selected, with a default threshold of 0.999. With unit keys, scores are cosine similarities, not probabilities. Direct key edits can break the unit-length assumption. Selection is made once and held for the answer. If no slot qualifies, the original computation is retained.
 
-
 ![Authoring and validating an answer trajectory](figures/illustration-02.png)
 
 *Illustration 2. Sequence writer. Source and donor traces are teacher-forced with matching prefixes; a failed free-generation validation restores the prior memory.*
@@ -112,7 +110,6 @@ For an exact source and matching prefix, the source state plus its stored displa
 
 The safetensors file contains keys, adjustments, sequence trajectories, slot controls, and compatibility metadata. It does not contain per-entry question strings, answer strings, donor prompts, or token IDs. A fixed system prompt is part of the metadata. The separate question catalogue and diagnostic reports are authoring and evaluation resources; ordinary question inference does not use them as an answer database.
 
-
 ![Position-indexed numerical replay](figures/illustration-03.png)
 
 *Illustration 3. Inference schematic. Routing occurs once per answer, while the selected adjustment varies with decoding position. This is restricted activation replay, not a stored answer-string lookup.*
@@ -155,7 +152,6 @@ With blank memory, the smoke test recorded a maximum logit difference of zero. S
 
 An earlier two-entry sequence test used the paraphrase *Explain what a system prompt does.* Its score was approximately 0.9792, below the 0.999 threshold, so memory did not activate. A strict threshold helps avoid unrelated matches but can miss semantically similar wording. This pilot did not evaluate the remaining 988 catalogue entries, broad paraphrase coverage, multi-turn histories, or adversarial near-matches.
 
-
 ![Recognition and reproduction are different tests](figures/illustration-04.png)
 
 *Illustration 4. Reported recognition example. The strict default threshold rejects one tested paraphrase despite successful exact-source sequence writes; these are development observations.*
@@ -181,7 +177,6 @@ MEMORILLA [4](#ref-memorilla) shares the goal of supplying a frozen LLM with ad
 LAMP-Qwen instead writes normalized keys and source–donor activation differences without training a memory module. It selects one eligible slot and edits the final pre-FFN residual state, rather than adding input tokens. Its sequence storage grows with answer length. MEMORILLA’s fixed token budget limits decoder context, not the size of its growing embedding store. MEMORILLA addresses document-based recall and composition; LAMP-Qwen currently demonstrates explicit exact-source answer programming. Their evaluations differ substantially: MEMORILLA reports eight benchmarks and an agent setting, whereas this report presents a 12-question development pilot. No comparative accuracy, latency, or novelty claim follows from these results.
 
 Fast-weight programming [5](#ref-fastweights) also studies writable numerical state, while knowledge editors can learn targeted parameter updates [6](#ref-editing). LAMP-Qwen’s narrower contribution is an inspectable forward-only activation intervention with a frozen checkpoint. The LAMP code is MIT licensed; upstream model and dependency licenses remain separate.
-
 
 ![Separate storage enables reversible edits](figures/illustration-05.png)
 
@@ -249,4 +244,4 @@ This project was created with assistance from GPT-6 Astra and Codex. AI tools su
 
 ## Suggested citation
 
-William Taggart. 2026. LAMP-Qwen: Forward-Only Associative Memory for a Frozen Small Language Model. Technical report. Modern and Classical Languages and Literatures, Virginia Tech. ACM manuscript edition, November 13, 2026. https://huggingface.co/will-taggart/LAMP-Qwen-v0.1
+William Taggart. 2026. LAMP-Qwen: Forward-Only Associative Memory for a Frozen Small Language Model. Technical report. Modern and Classical Languages and Literatures, Virginia Tech. November 13, 2026. https://huggingface.co/will-taggart/LAMP-Qwen-v0.1
