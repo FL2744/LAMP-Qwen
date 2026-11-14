@@ -1,37 +1,62 @@
-[
-  {
-    "number": 1,
-    "title": "Intervention at the final feed-forward stage",
-    "caption": "Two-branch intervention schematic. The same displacement enters the normalization input and the residual path; no later attention layer follows this insertion point.",
-    "section_preceded": "Model and intervention point",
-    "provenance": "Explanatory schematic derived from the report; not a screenshot or new experiment."
-  },
-  {
-    "number": 2,
-    "title": "Authoring and validating an answer trajectory",
-    "caption": "Sequence writer. Source and donor traces are teacher-forced with matching prefixes; a failed free-generation validation restores the prior memory.",
-    "section_preceded": "The forward-only writer",
-    "provenance": "Explanatory schematic derived from the report; not a screenshot or new experiment."
-  },
-  {
-    "number": 3,
-    "title": "Position-indexed numerical replay",
-    "caption": "Inference schematic. Routing occurs once per answer, while the selected adjustment varies with decoding position. This is restricted activation replay, not a stored answer-string lookup.",
-    "section_preceded": "Development evaluation",
-    "provenance": "Explanatory schematic derived from the report; not a screenshot or new experiment."
-  },
-  {
-    "number": 4,
-    "title": "Recognition and reproduction are different tests",
-    "caption": "Reported recognition example. The strict default threshold rejects one tested paraphrase despite successful exact-source sequence writes; these are development observations.",
-    "section_preceded": "Costs and limitations",
-    "provenance": "Explanatory schematic derived from the report; not a screenshot or new experiment."
-  },
-  {
-    "number": 5,
-    "title": "Separate storage enables reversible edits",
-    "caption": "Storage and reversibility schematic. Numerical memory is persisted separately from the frozen model. Its reversibility does not make encoded associations confidential.",
-    "section_preceded": "Practical utility, reversibility, and recoverability",
-    "provenance": "Explanatory schematic derived from the report; not a screenshot or new experiment."
-  }
-]
+{
+  "screenshots": [
+    {
+      "file": "figures/screenshot-01.png",
+      "source": "lamp-qwen-01.jpg",
+      "crop": [
+        15,
+        85,
+        2700,
+        1150
+      ],
+      "caption": "Chat workspace comparing base and memory-enabled responses in the displayed persona configuration. This interface example is not an accuracy benchmark."
+    },
+    {
+      "file": "figures/screenshot-02.png",
+      "source": "lamp-qwen-02.jpg",
+      "crop": [
+        500,
+        85,
+        2700,
+        1100
+      ],
+      "caption": "Memory-writing form with a source question and desired answer entered; the write has not been submitted."
+    },
+    {
+      "file": "figures/screenshot-03.png",
+      "source": "lamp-qwen-03.jpg",
+      "crop": [
+        500,
+        85,
+        2700,
+        1540
+      ],
+      "caption": "Question-bank browser with example prompts available for testing memory writes."
+    },
+    {
+      "file": "figures/screenshot-04.png",
+      "source": "lamp-qwen-04.jpg",
+      "crop": [
+        500,
+        85,
+        2700,
+        1440
+      ],
+      "caption": "Persona configuration interface for preparing a behavioral profile."
+    },
+    {
+      "file": "figures/screenshot-05.png",
+      "source": "lamp-qwen-05.jpg",
+      "crop": [
+        500,
+        85,
+        2700,
+        1100
+      ],
+      "caption": "Numerical weight editor showing part of the initially zero recognition-key row. Editing this row changes the matching weights."
+    }
+  ],
+  "retained_diagrams": [
+    1
+  ]
+}

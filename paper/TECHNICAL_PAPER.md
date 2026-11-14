@@ -10,6 +10,28 @@ Report date: November 13, 2026
 
 LAMP-Qwen extends Latent Associative Memory Programming (LAMP) from a small, one-word question–answer model to Qwen3.5-0.8B. A frozen pretrained transformer is augmented with editable numerical memory at the entrance to its final feed-forward network. A forward-only writer stores a normalized recognition key and differences between source and donor hidden states. A single stored adjustment changed responses but did not reproduce either of two initial target answers exactly. A sequence extension instead stores one adjustment per decoding step and reproduced all 12 selected target answers in a development pilot. Replacement, persistence, and clearing were also demonstrated; five unrelated questions retained their baseline answers, and hashes of the base model’s parameters were unchanged. These results establish a narrow implementation result: selected answers can be programmed through additional activation-steering tensors without gradient updates to the base model. They do not establish general semantic memory, reliable paraphrase recognition, or performance across the full 1,000-question catalogue. This report describes the intervention, writer, computational costs, practical uses, and limits of the evidence, including a subsequent candidate-based recovery of a programmed association from an exported memory.
 
+## Application interface
+
+![Chat workspace comparing base and memory-enabled responses in the displayed persona configuration. This interface example is not an accuracy benchmark.](figures/screenshot-01.png)
+
+*Chat workspace comparing base and memory-enabled responses in the displayed persona configuration. This interface example is not an accuracy benchmark.*
+
+![Memory-writing form with a source question and desired answer entered; the write has not been submitted.](figures/screenshot-02.png)
+
+*Memory-writing form with a source question and desired answer entered; the write has not been submitted.*
+
+![Question-bank browser with example prompts available for testing memory writes.](figures/screenshot-03.png)
+
+*Question-bank browser with example prompts available for testing memory writes.*
+
+![Persona configuration interface for preparing a behavioral profile.](figures/screenshot-04.png)
+
+*Persona configuration interface for preparing a behavioral profile.*
+
+![Numerical weight editor showing part of the initially zero recognition-key row. Editing this row changes the matching weights.](figures/screenshot-05.png)
+
+*Numerical weight editor showing part of the initially zero recognition-key row. Editing this row changes the matching weights.*
+
 ## Purpose and scope
 
 A pretrained language model contains knowledge distributed across many parameters, but those parameters are difficult for a user to edit directly. LAMP explores a more accessible interface: a separate numerical memory whose entries recognize a question state and redirect the computation that produces its answer. The original educational implementation uses a 77,568-parameter transformer with width 64 and 16 memory slots, containing 2,048 memory values in total [1](#ref-lamp). Its task is restricted to one-word answers.
@@ -66,9 +88,6 @@ s_i=\left\langle\frac{\widetilde h_0}{\lVert\widetilde h_0\rVert_2},K_i\right\ra
 $$
 At inference, $\widetilde h_0$ is the current question state. The highest-scoring enabled slot at or above its threshold is selected, with a default threshold of 0.999. With unit keys, scores are cosine similarities, not probabilities. Direct key edits can break the unit-length assumption. Selection is made once and held for the answer. If no slot qualifies, the original computation is retained.
 
-![Authoring and validating an answer trajectory](figures/illustration-02.png)
-
-*Illustration 2. Sequence writer. Source and donor traces are teacher-forced with matching prefixes; a failed free-generation validation restores the prior memory.*
 
 ## The forward-only writer
 
@@ -110,9 +129,6 @@ For an exact source and matching prefix, the source state plus its stored displa
 
 The safetensors file contains keys, adjustments, sequence trajectories, slot controls, and compatibility metadata. It does not contain per-entry question strings, answer strings, donor prompts, or token IDs. A fixed system prompt is part of the metadata. The separate question catalogue and diagnostic reports are authoring and evaluation resources; ordinary question inference does not use them as an answer database.
 
-![Position-indexed numerical replay](figures/illustration-03.png)
-
-*Illustration 3. Inference schematic. Routing occurs once per answer, while the selected adjustment varies with decoding position. This is restricted activation replay, not a stored answer-string lookup.*
 
 ## Development evaluation
 
@@ -152,9 +168,6 @@ With blank memory, the smoke test recorded a maximum logit difference of zero. S
 
 An earlier two-entry sequence test used the paraphrase *Explain what a system prompt does.* Its score was approximately 0.9792, below the 0.999 threshold, so memory did not activate. A strict threshold helps avoid unrelated matches but can miss semantically similar wording. This pilot did not evaluate the remaining 988 catalogue entries, broad paraphrase coverage, multi-turn histories, or adversarial near-matches.
 
-![Recognition and reproduction are different tests](figures/illustration-04.png)
-
-*Illustration 4. Reported recognition example. The strict default threshold rejects one tested paraphrase despite successful exact-source sequence writes; these are development observations.*
 
 ## Costs and limitations
 
@@ -178,9 +191,6 @@ LAMP-Qwen instead writes normalized keys and source–donor activation differenc
 
 Fast-weight programming [5](#ref-fastweights) also studies writable numerical state, while knowledge editors can learn targeted parameter updates [6](#ref-editing). LAMP-Qwen’s narrower contribution is an inspectable forward-only activation intervention with a frozen checkpoint. The LAMP code is MIT licensed; upstream model and dependency licenses remain separate.
 
-![Separate storage enables reversible edits](figures/illustration-05.png)
-
-*Illustration 5. Storage and reversibility schematic. Numerical memory is persisted separately from the frozen model. Its reversibility does not make encoded associations confidential.*
 
 ## Practical utility, reversibility, and recoverability
 

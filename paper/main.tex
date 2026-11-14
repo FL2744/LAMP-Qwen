@@ -6,7 +6,7 @@
 \usepackage{amsmath,booktabs,longtable,array,calc,xurl,fvextra}
 \DefineVerbatimEnvironment{verbatim}{Verbatim}{breaklines=true,fontsize=\small}
 \providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\usepackage{graphicx}
+\usepackage{graphicx,float}
 \begin{document}
 \title{LAMP-Qwen: Forward-Only Associative Memory for a Frozen Small Language Model}
 \author{William Taggart}
@@ -35,6 +35,44 @@ This prototype also distinguishes numerical storage from a conventional response
 \caption{Two-branch intervention schematic. The same displacement enters the normalization input and the residual path; no later attention layer follows this insertion point.}
 \Description{Intervention at the final feed-forward stage. Two-branch intervention schematic. The same displacement enters the normalization input and the residual path; no later attention layer follows this insertion point.}
 \label{fig:illustration-1}
+\end{figure}
+
+\section{Application interface}
+The application exposes its principal operations through the following workspaces and controls.
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{figures/screenshot-01.png}
+\caption{Chat workspace comparing base and memory-enabled responses in the displayed persona configuration. This interface example is not an accuracy benchmark.}
+\Description{Chat workspace comparing base and memory-enabled responses in the displayed persona configuration. This interface example is not an accuracy benchmark.}
+\label{fig:app-screen-1}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{figures/screenshot-02.png}
+\caption{Memory-writing form with a source question and desired answer entered; the write has not been submitted.}
+\Description{Memory-writing form with a source question and desired answer entered; the write has not been submitted.}
+\label{fig:app-screen-2}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{figures/screenshot-03.png}
+\caption{Question-bank browser with example prompts available for testing memory writes.}
+\Description{Question-bank browser with example prompts available for testing memory writes.}
+\label{fig:app-screen-3}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{figures/screenshot-04.png}
+\caption{Persona configuration interface for preparing a behavioral profile.}
+\Description{Persona configuration interface for preparing a behavioral profile.}
+\label{fig:app-screen-4}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{figures/screenshot-05.png}
+\caption{Numerical weight editor showing part of the initially zero recognition-key row. Editing this row changes the matching weights.}
+\Description{Numerical weight editor showing part of the initially zero recognition-key row. Editing this row changes the matching weights.}
+\label{fig:app-screen-5}
 \end{figure}
 
 \section{Model and intervention point}
@@ -75,13 +113,7 @@ s_i=\left\langle\frac{\widetilde h_0}{\lVert\widetilde h_0\rVert_2},K_i\right\ra
 \end{equation}
 At inference, $\widetilde h_0$ is the current question state. The highest-scoring enabled slot at or above its threshold is selected, with a default threshold of 0.999. With unit keys, scores are cosine similarities, not probabilities. Direct key edits can break the unit-length assumption. Selection is made once and held for the answer. If no slot qualifies, the original computation is retained.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{figures/illustration-02.pdf}
-\caption{Sequence writer. Source and donor traces are teacher-forced with matching prefixes; a failed free-generation validation restores the prior memory.}
-\Description{Authoring and validating an answer trajectory. Sequence writer. Source and donor traces are teacher-forced with matching prefixes; a failed free-generation validation restores the prior memory.}
-\label{fig:illustration-2}
-\end{figure}
+
 
 \section{The forward-only writer}
 \subsection{Single-adjustment mode}
@@ -113,13 +145,7 @@ For an exact source and matching prefix, the source state plus its stored displa
 \subsection{What is persisted}
 The safetensors file contains keys, adjustments, sequence trajectories, slot controls, and compatibility metadata. It does not contain per-entry question strings, answer strings, donor prompts, or token IDs. A fixed system prompt is part of the metadata. The separate question catalogue and diagnostic reports are authoring and evaluation resources; ordinary question inference does not use them as an answer database.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{figures/illustration-03.pdf}
-\caption{Inference schematic. Routing occurs once per answer, while the selected adjustment varies with decoding position. This is restricted activation replay, not a stored answer-string lookup.}
-\Description{Position-indexed numerical replay. Inference schematic. Routing occurs once per answer, while the selected adjustment varies with decoding position. This is restricted activation replay, not a stored answer-string lookup.}
-\label{fig:illustration-3}
-\end{figure}
+
 
 \section{Development evaluation}
 The source catalogue was imported from the workbook\\
@@ -163,13 +189,7 @@ With blank memory, the smoke test recorded a maximum logit difference of zero. S
 \subsection{Recognition limits}
 An earlier two-entry sequence test used the paraphrase \emph{Explain what a system prompt does.} Its score was approximately 0.9792, below the 0.999 threshold, so memory did not activate. A strict threshold helps avoid unrelated matches but can miss semantically similar wording. This pilot did not evaluate the remaining 988 catalogue entries, broad paraphrase coverage, multi-turn histories, or adversarial near-matches.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{figures/illustration-04.pdf}
-\caption{Reported recognition example. The strict default threshold rejects one tested paraphrase despite successful exact-source sequence writes; these are development observations.}
-\Description{Recognition and reproduction are different tests. Reported recognition example. The strict default threshold rejects one tested paraphrase despite successful exact-source sequence writes; these are development observations.}
-\label{fig:illustration-4}
-\end{figure}
+
 
 \section{Costs and limitations}
 For width $d=1024$, $S=1000$ slots, and float32 storage, the fixed matrices require
@@ -189,13 +209,7 @@ LAMP-Qwen instead writes normalized keys and source--donor activation difference
 
 Fast-weight programming~\cite{fastweights} also studies writable numerical state, while knowledge editors can learn targeted parameter updates~\cite{editing}. LAMP-Qwen's narrower contribution is an inspectable forward-only activation intervention with a frozen checkpoint. The LAMP code is MIT licensed; upstream model and dependency licenses remain separate.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{figures/illustration-05.pdf}
-\caption{Storage and reversibility schematic. Numerical memory is persisted separately from the frozen model. Its reversibility does not make encoded associations confidential.}
-\Description{Separate storage enables reversible edits. Storage and reversibility schematic. Numerical memory is persisted separately from the frozen model. Its reversibility does not make encoded associations confidential.}
-\label{fig:illustration-5}
-\end{figure}
+
 
 \section{Practical utility, reversibility, and recoverability}
 \subsection{Uses and comparison with output controls}
