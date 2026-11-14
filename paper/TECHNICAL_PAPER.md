@@ -10,32 +10,13 @@ Report date: November 13, 2026
 
 LAMP-Qwen extends Latent Associative Memory Programming (LAMP) from a small, one-word question–answer model to Qwen3.5-0.8B. A frozen pretrained transformer is augmented with editable numerical memory at the entrance to its final feed-forward network. A forward-only writer stores a normalized recognition key and differences between source and donor hidden states. A single stored adjustment changed responses but did not reproduce either of two initial target answers exactly. A sequence extension instead stores one adjustment per decoding step and reproduced all 12 selected target answers in a development pilot. Replacement, persistence, and clearing were also demonstrated; five unrelated questions retained their baseline answers, and hashes of the base model’s parameters were unchanged. These results establish a narrow implementation result: selected answers can be programmed through additional activation-steering tensors without gradient updates to the base model. They do not establish general semantic memory, reliable paraphrase recognition, or performance across the full 1,000-question catalogue. This report describes the intervention, writer, computational costs, practical uses, and limits of the evidence, including a subsequent candidate-based recovery of a programmed association from an exported memory.
 
-## Application interface
-
-![Chat workspace comparing base and memory-enabled responses in the displayed persona configuration. This interface example is not an accuracy benchmark.](figures/screenshot-01.png)
-
-*Chat workspace comparing base and memory-enabled responses in the displayed persona configuration. This interface example is not an accuracy benchmark.*
-
-![Memory-writing form with a source question and desired answer entered; the write has not been submitted.](figures/screenshot-02.png)
-
-*Memory-writing form with a source question and desired answer entered; the write has not been submitted.*
-
-![Question-bank browser with example prompts available for testing memory writes.](figures/screenshot-03.png)
-
-*Question-bank browser with example prompts available for testing memory writes.*
-
-![Persona configuration interface for preparing a behavioral profile.](figures/screenshot-04.png)
-
-*Persona configuration interface for preparing a behavioral profile.*
-
-![Numerical weight editor showing part of the initially zero recognition-key row. Editing this row changes the matching weights.](figures/screenshot-05.png)
-
-*Numerical weight editor showing part of the initially zero recognition-key row. Editing this row changes the matching weights.*
-
 ## Purpose and scope
 
 A pretrained language model contains knowledge distributed across many parameters, but those parameters are difficult for a user to edit directly. LAMP explores a more accessible interface: a separate numerical memory whose entries recognize a question state and redirect the computation that produces its answer. The original educational implementation uses a 77,568-parameter transformer with width 64 and 16 memory slots, containing 2,048 memory values in total [1](#ref-lamp). Its task is restricted to one-word answers.
 
+![Chat workspace comparing base and memory-enabled responses in the displayed persona configuration. This interface example is not an accuracy benchmark.](figures/screenshot-01.png)
+
+*Chat workspace comparing base and memory-enabled responses in the displayed persona configuration. This interface example is not an accuracy benchmark.*
 LAMP-Qwen preserves the central design—a frozen base, an initially inactive memory, and an explicit writer—while moving to a pretrained model that generates multiple tokens. The intended use is deliberate programming of selected question–answer associations. Memory is not automatically written on every forward pass. A user supplies a source question and a desired answer, then invokes the writer.
 
 The distinction between *training* and *writing* is essential. Qwen has already undergone substantial training. The present writer uses model inference, tensor subtraction, normalization, and validation; it does not perform backpropagation or optimizer steps. The resulting memory supplements the base model rather than replacing its pretrained parameters.
@@ -51,6 +32,9 @@ This prototype also distinguishes numerical storage from a conventional response
 The implementation loads the official `Qwen/Qwen3.5-0.8B` checkpoint at a fixed revision:\
 `2fc06364715b967f1860aea9cf38778875588b17`. Its text decoder has 24 layers, hidden width $d=1024$, feed-forward intermediate width 3,584, and an output vocabulary dimension of 248,320 [2](#ref-qwen). Its hybrid stack alternates groups of linear-attention layers with full-attention layers; the final decoder layer uses full attention.
 
+![Numerical weight editor showing part of the initially zero recognition-key row. Editing this row changes the matching weights.](figures/screenshot-05.png)
+
+*Numerical weight editor showing part of the initially zero recognition-key row. Editing this row changes the matching weights.*
 Experiments use the text path of the conditional-generation model, float32 weights, eager attention, evaluation mode, and disabled parameter gradients. Generation is greedy, uses a cache, and disables the thinking mode through the chat template. The source prompt asks for a direct, concise answer in one or two sentences. Tests ran on an M4 Mac mini with 16 GB unified memory using PyTorch’s Metal backend. The recorded environment uses Python 3.14, PyTorch 2.15.0, and Transformers 5.22.2.
 
 Although an Ollama installation motivated the project, this implementation runs through Transformers. The ordinary Ollama chat API does not provide the internal layer hooks used here [3](#ref-ollama). The existing quantized Ollama model is left unchanged; its results and resource requirements should not be conflated with those of this float32 implementation.
@@ -88,11 +72,13 @@ s_i=\left\langle\frac{\widetilde h_0}{\lVert\widetilde h_0\rVert_2},K_i\right\ra
 $$
 At inference, $\widetilde h_0$ is the current question state. The highest-scoring enabled slot at or above its threshold is selected, with a default threshold of 0.999. With unit keys, scores are cosine similarities, not probabilities. Direct key edits can break the unit-length assumption. Selection is made once and held for the answer. If no slot qualifies, the original computation is retained.
 
-
 ## The forward-only writer
 
 ### Single-adjustment mode
 
+![Memory-writing form with a source question and desired answer entered; the write has not been submitted.](figures/screenshot-02.png)
+
+*Memory-writing form with a source question and desired answer entered; the write has not been submitted.*
 The original LAMP mechanism stores a source-to-donor displacement. A donor state $h^\ast_0$ is obtained from a prompt that leads toward the desired answer. The writer records
 $$
 
@@ -129,12 +115,14 @@ For an exact source and matching prefix, the source state plus its stored displa
 
 The safetensors file contains keys, adjustments, sequence trajectories, slot controls, and compatibility metadata. It does not contain per-entry question strings, answer strings, donor prompts, or token IDs. A fixed system prompt is part of the metadata. The separate question catalogue and diagnostic reports are authoring and evaluation resources; ordinary question inference does not use them as an answer database.
 
-
 ## Development evaluation
 
 The source catalogue was imported from the workbook\
 `chatbot-1000-questions-and-answers.xlsx`. It contains 1,000 questions in 25 categories, with 40 questions per category. It is a curated question bank, not a measured frequency ranking. Importing all entries does not establish successful writing of all entries.
 
+![Question-bank browser with example prompts available for testing memory writes.](figures/screenshot-03.png)
+
+*Question-bank browser with example prompts available for testing memory writes.*
 The sequence pilot used 12 selected questions across 12 categories. Each successful write was checked by generating from its original question. Matching collapsed whitespace and ignored case; punctuation and substantive wording still had to agree. The donor instruction was refined using development cases, so this is not a held-out evaluation.
 
 |  ID | Source question                  | Steps | Time (s) |
@@ -168,7 +156,6 @@ With blank memory, the smoke test recorded a maximum logit difference of zero. S
 
 An earlier two-entry sequence test used the paraphrase *Explain what a system prompt does.* Its score was approximately 0.9792, below the 0.999 threshold, so memory did not activate. A strict threshold helps avoid unrelated matches but can miss semantically similar wording. This pilot did not evaluate the remaining 988 catalogue entries, broad paraphrase coverage, multi-turn histories, or adversarial near-matches.
 
-
 ## Costs and limitations
 
 For width $d=1024$, $S=1000$ slots, and float32 storage, the fixed matrices require
@@ -191,11 +178,13 @@ LAMP-Qwen instead writes normalized keys and source–donor activation differenc
 
 Fast-weight programming [5](#ref-fastweights) also studies writable numerical state, while knowledge editors can learn targeted parameter updates [6](#ref-editing). LAMP-Qwen’s narrower contribution is an inspectable forward-only activation intervention with a frozen checkpoint. The LAMP code is MIT licensed; upstream model and dependency licenses remain separate.
 
-
 ## Practical utility, reversibility, and recoverability
 
 ### Uses and comparison with output controls
 
+![Persona configuration interface for preparing a behavioral profile.](figures/screenshot-04.png)
+
+*Persona configuration interface for preparing a behavioral profile.*
 The immediate practical uses are controlled answer overrides, swappable sets of associations, and educational experiments in which users inspect, replace, or disable numerical memories while retaining the same base model. Local personalization is plausible for selected associations, but automatic learning, conversational recall, and broad domain expertise have not been demonstrated. A useful next evaluation would compare LAMP with prompt instructions, retrieval, and answer replacement on identical edits, measuring exact answers, unseen paraphrases, related reasoning, unrelated questions, latency, and storage.
 
 An output filter can replace a completed answer string; LAMP instead changes hidden states before token selection. Prompt instructions and constrained decoding provide other ways to control generation. All can yield the same visible answer, and semantic recognition is not unique to LAMP. For fixed question–answer replacement, a conventional lookup is simpler and may be more reliable. Sequence memory remains a model-dependent trajectory for a selected answer, not evidence of a general knowledge update. Its value beyond replacement depends on demonstrating useful generalization. Reusable steering of tone or explanation style is a possible extension, motivated by activation-engineering research [7](#ref-actadd), rather than an established capability of this writer.
